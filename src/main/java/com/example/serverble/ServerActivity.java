@@ -14,6 +14,7 @@ import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.BluetoothLeAdvertiser;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -35,8 +36,10 @@ public class ServerActivity extends AppCompatActivity {
     private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothLeAdvertiser mBluetoothLeAdvertiser;
-    Button restart;
+    Button restart,refresh;
+    TextView msgText;
     TextView DeviceInfoTextView;
+    ServerBleApplication serverBleApplication;
     //public static String SERVICE_STRING = "18902a9a-1f4a-44fe-936f-14c8eea41800";
     public static UUID SERVICE_UUID = UUID.fromString("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
 
@@ -50,8 +53,16 @@ public class ServerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_server);
         restart = (Button) findViewById(R.id.restart_server_button);
+        msgText = (TextView) findViewById(R.id.msgText);
         mDevices = new ArrayList<>();
+        refresh = (Button)findViewById(R.id.refresh);
 
+        refresh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                msgText.setText(serverBleApplication.getMsg());
+            }
+        });
         mBluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
         DeviceInfoTextView = (TextView) findViewById(R.id.server_device_info_text_view);
         if (mBluetoothManager != null) {
@@ -83,7 +94,7 @@ public class ServerActivity extends AppCompatActivity {
             return;
         }
 
-        GattServerCallback gattServerCallback = new GattServerCallback();
+        GattServerCallback gattServerCallback = new GattServerCallback(getApplicationContext());
         mGattServer = mBluetoothManager.openGattServer(this, gattServerCallback);
 
         @SuppressLint("HardwareIds")
@@ -201,6 +212,9 @@ public class ServerActivity extends AppCompatActivity {
 
     private void sendReverseMessage(byte[] message) {
         byte[] response =  ByteUtils.reverse(message);
+        serverBleApplication = (ServerBleApplication) getApplicationContext();
+        serverBleApplication.setMsg(com.example.serverble.StringUtils.stringFromBytes(message));
+
         Log.i("rev_send", "Sending: " +  com.example.serverble.StringUtils.byteArrayInHexFormat(response));
         notifyCharacteristicEcho(response);
 
@@ -213,6 +227,13 @@ public class ServerActivity extends AppCompatActivity {
 
 
     private class GattServerCallback extends BluetoothGattServerCallback {
+
+         private Context context;
+        GattServerCallback(Context context){
+
+            this.context = context;
+
+        }
         @Override
         public void onConnectionStateChange(BluetoothDevice device, int status, int newState) {
             super.onConnectionStateChange(device, status, newState);
@@ -258,6 +279,7 @@ public class ServerActivity extends AppCompatActivity {
                     value);
             Log.i("char_write", "onCharacteristicWriteRequest" + characteristic.getUuid().toString()
                     + "\nReceived: " +  com.example.serverble.StringUtils.byteArrayInHexFormat(value) +" In String Format "+  com.example.serverble.StringUtils.stringFromBytes(value));
+
 
         //    Toast.makeText(getApplicationContext(),  com.example.serverble.StringUtils.stringFromBytes(value),Toast.LENGTH_LONG).show();
             if (CHARACTERISTIC_UUID.equals(characteristic.getUuid())) {
