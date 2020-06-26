@@ -52,7 +52,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="30dp"
                 android:layout_weight="1"
-                android:text="hii "
                 android:textSize="20sp" />
 
         </LinearLayout>
@@ -65,5 +64,29 @@
             android:layout_height="wrap_content"
             android:text="Refresh"/>
 
+        <EditText
+            android:id="@+id/msg"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        </EditText>
+
+        <Button
+        android:id="@+id/send"
+        android:text="send"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+        <!--<Button
+            android:id="@+id/service_start"
+            android:text="Start Service"
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <Button
+            android:id="@+id/service_stop"
+            android:text="Stop Service"
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>-->
     </LinearLayout>
 </RelativeLayout>

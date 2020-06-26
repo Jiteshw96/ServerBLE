@@ -1,6 +1,7 @@
 package com.example.serverble;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -21,10 +22,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -36,8 +37,9 @@ public class ServerActivity extends AppCompatActivity {
     private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothLeAdvertiser mBluetoothLeAdvertiser;
-    Button restart,refresh;
+    Button restart,refresh,send,startService,stopService;
     TextView msgText;
+    EditText returnMessage;
     TextView DeviceInfoTextView;
     ServerBleApplication serverBleApplication;
     //public static String SERVICE_STRING = "18902a9a-1f4a-44fe-936f-14c8eea41800";
@@ -56,11 +58,37 @@ public class ServerActivity extends AppCompatActivity {
         msgText = (TextView) findViewById(R.id.msgText);
         mDevices = new ArrayList<>();
         refresh = (Button)findViewById(R.id.refresh);
+        returnMessage = findViewById(R.id.msg);
+       /* startService = findViewById(R.id.service_start);
+        stopService = findViewById(R.id.service_stop);*/
+        /*startService.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startService(v);
+            }
+        });
 
+        stopService.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                stopService(v);
+            }
+        });*/
+
+        send = findViewById(R.id.send);
+
+        send.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                    String message = returnMessage.getText().toString();
+                    serverBleApplication.setServerMsg(message);
+
+            }
+        });
         refresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                msgText.setText(serverBleApplication.getMsg());
+                msgText.setText(serverBleApplication.getClientMsg());
             }
         });
         mBluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
@@ -105,6 +133,8 @@ public class ServerActivity extends AppCompatActivity {
         startAdvertising();
 
     }
+
+
 
     @Override
     protected void onPause() {
@@ -151,6 +181,22 @@ public class ServerActivity extends AppCompatActivity {
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
+
+/*
+    private void startService(View v){
+
+        Intent serviceIntent = new Intent(this,ServerService.class);
+        serviceIntent.putExtra("inputExtra","Test");
+        startService(serviceIntent);
+      // ContextCompat.startForegroundService(this,serviceIntent);
+    }*/
+
+    /*private void stopService(View v){
+
+        Intent serviceIntent = new Intent(this,ServerService.class);
+        stopService(serviceIntent);
+
+    }*/
 
     private void setupServer() {
         /*BluetoothGattService service = new BluetoothGattService(SERVICE_UUID,
@@ -213,10 +259,11 @@ public class ServerActivity extends AppCompatActivity {
     private void sendReverseMessage(byte[] message) {
         byte[] response =  ByteUtils.reverse(message);
         serverBleApplication = (ServerBleApplication) getApplicationContext();
-        serverBleApplication.setMsg(com.example.serverble.StringUtils.stringFromBytes(message));
+         serverBleApplication.setClientMsg(com.example.serverble.StringUtils.stringFromBytes(message));
+        String str = serverBleApplication.getServerMsg();
 
         Log.i("rev_send", "Sending: " +  com.example.serverble.StringUtils.byteArrayInHexFormat(response));
-        notifyCharacteristicEcho(response);
+        notifyCharacteristicEcho(com.example.serverble.StringUtils.bytesFromString(str));
 
     }
 
