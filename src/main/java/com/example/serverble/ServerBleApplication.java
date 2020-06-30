@@ -31,10 +31,10 @@ public class ServerBleApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-      //  createNotificationChannel();
+     createNotificationChannel();
     }
 
-    /*private  void createNotificationChannel(){
+    private  void createNotificationChannel(){
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
 
             NotificationChannel serviceChannel = new NotificationChannel(
@@ -46,5 +46,5 @@ public class ServerBleApplication extends Application {
             NotificationManager manager = getSystemService(NotificationManager.class);
             manager.createNotificationChannel(serviceChannel);
         }
-    }*/
+    }
 }

@@ -25,7 +25,7 @@
             </intent-filter>
         </activity>
 
-     <!--<service android:name=".ServerService"/>-->
+     <service android:name=".ServerService"/>
     </application>
     <uses-feature
         android:name="android.hardware.bluetooth_le"

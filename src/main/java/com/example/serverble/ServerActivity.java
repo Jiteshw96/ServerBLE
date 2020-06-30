@@ -59,9 +59,10 @@ public class ServerActivity extends AppCompatActivity {
         mDevices = new ArrayList<>();
         refresh = (Button)findViewById(R.id.refresh);
         returnMessage = findViewById(R.id.msg);
-       /* startService = findViewById(R.id.service_start);
-        stopService = findViewById(R.id.service_stop);*/
-        /*startService.setOnClickListener(new View.OnClickListener() {
+        startService = findViewById(R.id.service_start);
+        stopService = findViewById(R.id.service_stop);
+        serverBleApplication = (ServerBleApplication) getApplicationContext();
+        startService.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startService(v);
@@ -73,7 +74,7 @@ public class ServerActivity extends AppCompatActivity {
             public void onClick(View v) {
                 stopService(v);
             }
-        });*/
+        });
 
         send = findViewById(R.id.send);
 
@@ -99,7 +100,7 @@ public class ServerActivity extends AppCompatActivity {
         restart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                restartServer();
+               // restartServer();
             }
         });
         /*GattServerCallback gattServerCallback = new GattServerCallback();
@@ -122,15 +123,15 @@ public class ServerActivity extends AppCompatActivity {
             return;
         }
 
-        GattServerCallback gattServerCallback = new GattServerCallback(getApplicationContext());
-        mGattServer = mBluetoothManager.openGattServer(this, gattServerCallback);
+      /*  GattServerCallback gattServerCallback = new GattServerCallback(getApplicationContext());
+        mGattServer = mBluetoothManager.openGattServer(this, gattServerCallback);*/
 
         @SuppressLint("HardwareIds")
         String deviceInfo = "Device Info" + "\nName: " + mBluetoothAdapter.getName() + "\nAddress: " + mBluetoothAdapter.getAddress();
         DeviceInfoTextView.setText(deviceInfo);
 
-        setupServer();
-        startAdvertising();
+        /*setupServer();
+        startAdvertising();*/
 
     }
 
@@ -182,26 +183,25 @@ public class ServerActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-/*
     private void startService(View v){
 
         Intent serviceIntent = new Intent(this,ServerService.class);
         serviceIntent.putExtra("inputExtra","Test");
         startService(serviceIntent);
       // ContextCompat.startForegroundService(this,serviceIntent);
-    }*/
+    }
 
-    /*private void stopService(View v){
+    private void stopService(View v){
 
         Intent serviceIntent = new Intent(this,ServerService.class);
         stopService(serviceIntent);
 
-    }*/
+    }
 
-    private void setupServer() {
-        /*BluetoothGattService service = new BluetoothGattService(SERVICE_UUID,
+  /*  private void setupServer() {
+        *//*BluetoothGattService service = new BluetoothGattService(SERVICE_UUID,
                 BluetoothGattService.SERVICE_TYPE_PRIMARY);
-        mGattServer.addService(service);*/
+        mGattServer.addService(service);*//*
         BluetoothGattService service1 = new BluetoothGattService(SERVICE_UUID,
                 BluetoothGattService.SERVICE_TYPE_PRIMARY);
         BluetoothGattCharacteristic writeCharacteristic = new BluetoothGattCharacteristic(
@@ -288,8 +288,8 @@ public class ServerActivity extends AppCompatActivity {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 addDevice(device);
                 Log.i("Connect", "Connected to "+device);
-                /*Intent intent = new Intent(ServerActivity.this, ChatActivity.class);
-                startActivity(intent);*/
+                *//*Intent intent = new Intent(ServerActivity.this, ChatActivity.class);
+                startActivity(intent);*//*
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 removeDevice(device);
             }
@@ -351,7 +351,7 @@ public class ServerActivity extends AppCompatActivity {
     {
         mDevices.remove(device);
     }
-
+*/
 
 
 }
