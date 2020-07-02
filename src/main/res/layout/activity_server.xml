@@ -67,6 +67,7 @@
 
         <EditText
             android:id="@+id/msg"
+            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -75,8 +76,15 @@
         <Button
         android:id="@+id/send"
         android:text="send"
+        android:visibility="gone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
         <Button
             android:id="@+id/service_start"
             android:text="Start Service"
@@ -86,8 +94,36 @@
         <Button
             android:id="@+id/service_stop"
             android:text="Stop Service"
+            android:layout_marginLeft="10dp"
             android:layout_gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingTop="10dp"
+            android:orientation="horizontal">
+            <Button
+                android:id="@+id/show_records"
+                android:text="Show records"
+                android:layout_gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <Button
+                android:id="@+id/remove_records"
+                android:text="Remove Records"
+                android:layout_marginLeft="10dp"
+                android:layout_gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+
+        <ListView
+            android:id="@+id/log_list_view"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"/>
     </LinearLayout>
 </RelativeLayout>

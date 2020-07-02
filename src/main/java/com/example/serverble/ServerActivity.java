@@ -1,5 +1,7 @@
 package com.example.serverble;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
@@ -18,11 +20,17 @@ import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,11 +45,15 @@ public class ServerActivity extends AppCompatActivity {
     private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothLeAdvertiser mBluetoothLeAdvertiser;
+    private ListView messageList;
+    private String[] name,address,messages;
     Button restart,refresh,send,startService,stopService;
     TextView msgText;
+    Button showRecords,removeRecords;
     EditText returnMessage;
     TextView DeviceInfoTextView;
     ServerBleApplication serverBleApplication;
+    ArrayList<BleDataFromClient> bleDataFromClients;
     //public static String SERVICE_STRING = "18902a9a-1f4a-44fe-936f-14c8eea41800";
     public static UUID SERVICE_UUID = UUID.fromString("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
 
@@ -58,7 +70,14 @@ public class ServerActivity extends AppCompatActivity {
         msgText = (TextView) findViewById(R.id.msgText);
         mDevices = new ArrayList<>();
         refresh = (Button)findViewById(R.id.refresh);
+        showRecords = findViewById(R.id.show_records);
+        removeRecords = findViewById(R.id.remove_records);
         returnMessage = findViewById(R.id.msg);
+        bleDataFromClients = new ArrayList<>();
+        messageList = findViewById(R.id.log_list_view);
+        ListAdapter listAdapter = new ListAdapter(this,bleDataFromClients);
+        messageList.setAdapter(listAdapter);
+
         startService = findViewById(R.id.service_start);
         stopService = findViewById(R.id.service_stop);
         serverBleApplication = (ServerBleApplication) getApplicationContext();
@@ -90,6 +109,7 @@ public class ServerActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 msgText.setText(serverBleApplication.getClientMsg());
+
             }
         });
         mBluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
@@ -103,6 +123,24 @@ public class ServerActivity extends AppCompatActivity {
                // restartServer();
             }
         });
+
+
+        showRecords.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AppDatabase db= (AppDatabase) AppDatabase.getAppDatabase(ServerActivity.this);
+                new getAll().execute(db);
+            }
+        });
+
+        removeRecords.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AppDatabase db= (AppDatabase) AppDatabase.getAppDatabase(ServerActivity.this);
+                new deleteAll().execute(db);
+            }
+        });
+
         /*GattServerCallback gattServerCallback = new GattServerCallback();
         mGattServer = mBluetoothManager.openGattServer(this, gattServerCallback);
 
@@ -129,11 +167,15 @@ public class ServerActivity extends AppCompatActivity {
         @SuppressLint("HardwareIds")
         String deviceInfo = "Device Info" + "\nName: " + mBluetoothAdapter.getName() + "\nAddress: " + mBluetoothAdapter.getAddress();
         DeviceInfoTextView.setText(deviceInfo);
-
         /*setupServer();
         startAdvertising();*/
 
     }
+
+
+
+
+
 
 
 
@@ -187,7 +229,14 @@ public class ServerActivity extends AppCompatActivity {
 
         Intent serviceIntent = new Intent(this,ServerService.class);
         serviceIntent.putExtra("inputExtra","Test");
-        startService(serviceIntent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            ContextCompat.startForegroundService(this, serviceIntent);
+        }
+        else{
+            startService(serviceIntent);
+        }
+
+
       // ContextCompat.startForegroundService(this,serviceIntent);
     }
 
@@ -353,5 +402,44 @@ public class ServerActivity extends AppCompatActivity {
     }
 */
 
+    class getAll extends AsyncTask<AppDatabase, Void, Void> {
 
+    List<BleDataFromClient> bleDataFromClientslist;
+
+            @Override
+            protected Void doInBackground(AppDatabase... db) {
+                bleDataFromClientslist=new ArrayList<BleDataFromClient>();
+                bleDataFromClientslist.addAll(db[0].userDao().getAll());
+                return null;
+            }
+
+        @Override
+            protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            ListAdapter listAdapter = new ListAdapter(ServerActivity.this,bleDataFromClientslist);
+            messageList.setAdapter(listAdapter);
+            listAdapter.notifyDataSetChanged();
+        }
+    }
+
+
+   class deleteAll extends AsyncTask<AppDatabase, Void, Void> {
+       List<BleDataFromClient> bleDataFromClientslist;
+   @Override
+   protected Void doInBackground(AppDatabase... db) {
+     db[0].userDao().nukeTable();
+     bleDataFromClientslist=new ArrayList<BleDataFromClient>();
+     bleDataFromClientslist.addAll(db[0].userDao().getAll());
+     return null;
+   }
+
+   @Override
+   protected void onPostExecute(Void aVoid) {
+       super.onPostExecute(aVoid);
+       ListAdapter listAdapter = new ListAdapter(ServerActivity.this,bleDataFromClientslist);
+       messageList.setAdapter(listAdapter);
+       listAdapter.notifyDataSetChanged();
+
+        }
+    }
 }

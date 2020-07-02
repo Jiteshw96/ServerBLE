@@ -16,6 +16,7 @@ import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
@@ -35,6 +36,7 @@ public class ServerService extends Service {
     private BluetoothGattServer mGattServer;
     private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBluetoothAdapter;
+    private AppDatabase db;
     private BluetoothLeAdvertiser mBluetoothLeAdvertiser;
     ServerBleApplication serverBleApplication;
     public static UUID SERVICE_UUID = UUID.fromString("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
@@ -56,7 +58,7 @@ public class ServerService extends Service {
             mBluetoothAdapter = mBluetoothManager.getAdapter();
         }
 
-
+        db= (AppDatabase) AppDatabase.getAppDatabase(this);
         GattServerCallback gattServerCallback = new GattServerCallback(getApplicationContext());
         mGattServer = mBluetoothManager.openGattServer(this, gattServerCallback);
         setupServer();
@@ -75,7 +77,6 @@ public class ServerService extends Service {
         startForeground(1,notification);
         //stopSelf();
         //ContextCompat.startForegroundService(this,notification);
-
 
         return START_STICKY;
     }
@@ -124,8 +125,8 @@ public class ServerService extends Service {
     }
 
     private void startAdvertising() {
-        Intent discoverableIntent =
-                new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+        Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+        discoverableIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 20);
         startActivity(discoverableIntent);
         Log.i("discoverable", "Is Discoverable");
@@ -152,6 +153,10 @@ public class ServerService extends Service {
         byte[] response =  ByteUtils.reverse(message);
         serverBleApplication = (ServerBleApplication) getApplicationContext();
         serverBleApplication.setClientMsg(com.example.serverble.StringUtils.stringFromBytes(message));
+        String stringMessage = serverBleApplication.getClientMsg();
+        String[] parts= stringMessage.split(" ");
+
+        new addAll(parts[0],parts[1],parts[2],parts[3]).execute(db);
         String str = serverBleApplication.getServerMsg();
 
         Log.i("rev_send", "Sending: " +  com.example.serverble.StringUtils.byteArrayInHexFormat(response));
@@ -243,6 +248,25 @@ public class ServerService extends Service {
     {
         mDevices.remove(device);
     }
+
+
+    class addAll extends AsyncTask<AppDatabase, Void, Void>{
+  BleDataFromClient user = new BleDataFromClient();
+
+             public addAll(String Time, String Message, String DeviceName, String DeviceMacAddress) { user.setDevicemacaddress(DeviceMacAddress);
+                user.setDevicename(DeviceName);
+                user.setTime(Time);
+                user.setMessage(Message);
+             }
+
+                @Override
+                protected Void doInBackground(AppDatabase... db) {
+                 db[0].userDao().insertAll(user);
+                 return null;
+             }
+    }
+
+
 
 
 }
