@@ -39,10 +39,10 @@ public class ServerService extends Service {
     private AppDatabase db;
     private BluetoothLeAdvertiser mBluetoothLeAdvertiser;
     ServerBleApplication serverBleApplication;
-    public static UUID SERVICE_UUID = UUID.fromString("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
+    public static UUID SERVICE_UUID = UUID.fromString("18902a9a-1f4a-44fe-936f-14c8eea41800");
 
     //public static String CHARACTERISTIC_STRING = "18902a9a-1f4a-44fe-936f-14c8eea41801";
-    public static UUID CHARACTERISTIC_UUID = UUID.fromString("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
+    public static UUID CHARACTERISTIC_UUID = UUID.fromString("18902a9a-1f4a-44fe-936f-14c8eea41801");
     private int REQUEST_ENABLE_BT = 1;
     @Override
     public void onCreate() {
@@ -127,7 +127,7 @@ public class ServerService extends Service {
     private void startAdvertising() {
         Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
         discoverableIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 20);
+        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
         startActivity(discoverableIntent);
         Log.i("discoverable", "Is Discoverable");
     }
@@ -151,16 +151,18 @@ public class ServerService extends Service {
 
     private void sendReverseMessage(byte[] message) {
         byte[] response =  ByteUtils.reverse(message);
+
         serverBleApplication = (ServerBleApplication) getApplicationContext();
         serverBleApplication.setClientMsg(com.example.serverble.StringUtils.stringFromBytes(message));
         String stringMessage = serverBleApplication.getClientMsg();
         String[] parts= stringMessage.split(" ");
 
+
         new addAll(parts[0],parts[1],parts[2],parts[3]).execute(db);
         String str = serverBleApplication.getServerMsg();
 
         Log.i("rev_send", "Sending: " +  com.example.serverble.StringUtils.byteArrayInHexFormat(response));
-        notifyCharacteristicEcho(com.example.serverble.StringUtils.bytesFromString(str));
+        notifyCharacteristicEcho(com.example.serverble.StringUtils.bytesFromString(stringMessage));
 
     }
 
@@ -185,10 +187,14 @@ public class ServerService extends Service {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 addDevice(device);
                 Log.i("Connect", "Connected to "+device);
+                serverBleApplication = (ServerBleApplication) getApplicationContext();
+                //serverBleApplication.setStatus("Connected");
                 /*Intent intent = new Intent(ServerActivity.this, ChatActivity.class);
                 startActivity(intent);*/
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 removeDevice(device);
+                serverBleApplication.setStatus("Disconnected");
+
             }
         }
 
@@ -261,6 +267,19 @@ public class ServerService extends Service {
 
                 @Override
                 protected Void doInBackground(AppDatabase... db) {
+                    int count = db[0].userDao().countDeviceAgainstMacAddress(user.getDevicemacaddress());
+                    if(count == 0){
+                        BleDataDeviceInfo bleDevice=new BleDataDeviceInfo();
+                        bleDevice.setDevicename("ABC");
+                        int colorCount = db[0].userDao().countDevice();
+                        if(colorCount >= 5){
+                            int color = 6;
+                        }
+                        bleDevice.setColor(String.valueOf(colorCount));
+                        bleDevice.setDevicemacaddress(user.getDevicemacaddress());
+                        bleDevice.getDevicemacaddress();
+                        db[0].userDao().insertDevice(bleDevice);
+                    }
                  db[0].userDao().insertAll(user);
                  return null;
              }

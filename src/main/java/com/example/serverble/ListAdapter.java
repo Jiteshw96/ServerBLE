@@ -16,13 +16,28 @@ import androidx.annotation.Nullable;
 
 class ListAdapter extends BaseAdapter {
 
-        Context context;
+         private AppDatabase db;
+         private Context context;
+         ArrayList<Integer> msgColorList = new ArrayList();
+
+       // ServerBleApplication serverBleApplication;
         List<BleDataFromClient> bleDataFromClients =  new ArrayList<BleDataFromClient>();
 
         public ListAdapter(Context c, List<BleDataFromClient> bleDataFromClients) {
             this.context = c;
             this.bleDataFromClients = bleDataFromClients;
+            init();
+
+
         }
+
+    private void init(){
+        int[] colors = this.context.getResources().getIntArray(R.array.colors);
+        db= (AppDatabase) AppDatabase.getAppDatabase(this.context);
+        for (int i = 0; i < colors.length; i++) {
+            msgColorList.add(colors[i]);
+        }
+    }
 
     @Override
     public int getCount() {
@@ -52,11 +67,13 @@ class ListAdapter extends BaseAdapter {
             TextView nameText = convertView.findViewById(R.id.name);
             TextView messageText = convertView.findViewById(R.id.message);
             TextView addressText = convertView.findViewById(R.id.address);
-
+            String macAddress = bleDataFromClients.get(position).getDevicemacaddress();
             nameText.setText(bleDataFromClients.get(position).getDevicename());
             messageText.setText(bleDataFromClients.get(position).getMessage());
-            addressText.setText(bleDataFromClients.get(position).getDevicemacaddress());
-
+            addressText.setText(macAddress);
+            String colorCode =  db.userDao().getDeviceAgainstMacAddress(macAddress).getColor();
+            int color =msgColorList.get(Integer.parseInt(colorCode));
+            convertView.findViewById(R.id.msgList).setBackgroundColor(color);
             return  convertView;
         }
     }

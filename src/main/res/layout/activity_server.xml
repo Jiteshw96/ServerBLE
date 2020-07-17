@@ -17,12 +17,15 @@
         <TextView
             android:id="@+id/server_device_info_text_view"
             android:layout_width="wrap_content"
+            android:visibility="gone"
             android:layout_height="wrap_content"/>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Actions"
+            android:text="status"
+            android:visibility="gone"
+            android:id="@+id/status"
             android:textAlignment="center"
             android:gravity="center_horizontal" />
 
@@ -96,6 +99,7 @@
             android:text="Stop Service"
             android:layout_marginLeft="10dp"
             android:layout_gravity="center"
+            android:visibility="gone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
         </LinearLayout>

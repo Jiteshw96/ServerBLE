@@ -8,7 +8,7 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
 
-@Database(entities = {BleDataFromClient.class}, version = 1)
+@Database(entities = {BleDataFromClient.class,BleDataDeviceInfo.class}, version = 1)
 public abstract class AppDatabase extends RoomDatabase {
 
     private static AppDatabase INSTANCE;

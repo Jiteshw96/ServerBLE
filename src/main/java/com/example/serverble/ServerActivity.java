@@ -7,6 +7,7 @@ import androidx.core.content.ContextCompat;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -48,17 +49,17 @@ public class ServerActivity extends AppCompatActivity {
     private ListView messageList;
     private String[] name,address,messages;
     Button restart,refresh,send,startService,stopService;
-    TextView msgText;
+    TextView msgText,status;
     Button showRecords,removeRecords;
     EditText returnMessage;
     TextView DeviceInfoTextView;
     ServerBleApplication serverBleApplication;
     ArrayList<BleDataFromClient> bleDataFromClients;
     //public static String SERVICE_STRING = "18902a9a-1f4a-44fe-936f-14c8eea41800";
-    public static UUID SERVICE_UUID = UUID.fromString("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
+    public static UUID SERVICE_UUID = UUID.fromString("18902a9a-1f4a-44fe-936f-14c8eea41800");
 
     //public static String CHARACTERISTIC_STRING = "18902a9a-1f4a-44fe-936f-14c8eea41801";
-    public static UUID CHARACTERISTIC_UUID = UUID.fromString("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
+    public static UUID CHARACTERISTIC_UUID = UUID.fromString("18902a9a-1f4a-44fe-936f-14c8eea41801");
     private int REQUEST_ENABLE_BT = 1;
 
 
@@ -68,6 +69,7 @@ public class ServerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_server);
         restart = (Button) findViewById(R.id.restart_server_button);
         msgText = (TextView) findViewById(R.id.msgText);
+        status =  findViewById(R.id.status);
         mDevices = new ArrayList<>();
         refresh = (Button)findViewById(R.id.refresh);
         showRecords = findViewById(R.id.show_records);
@@ -108,7 +110,12 @@ public class ServerActivity extends AppCompatActivity {
         refresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 msgText.setText(serverBleApplication.getClientMsg());
+                status.setText(serverBleApplication.getStatus());
+                AppDatabase db= (AppDatabase) AppDatabase.getAppDatabase(ServerActivity.this);
+             //  mBluetoothManager.getConnectedDevices(BluetoothProfile.GATT);
+
 
             }
         });
@@ -227,6 +234,9 @@ public class ServerActivity extends AppCompatActivity {
 
     private void startService(View v){
 
+        if(isMyServiceRunning(ServerService.class)){
+           stopService(v);
+        }
         Intent serviceIntent = new Intent(this,ServerService.class);
         serviceIntent.putExtra("inputExtra","Test");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -235,8 +245,6 @@ public class ServerActivity extends AppCompatActivity {
         else{
             startService(serviceIntent);
         }
-
-
       // ContextCompat.startForegroundService(this,serviceIntent);
     }
 
@@ -244,7 +252,6 @@ public class ServerActivity extends AppCompatActivity {
 
         Intent serviceIntent = new Intent(this,ServerService.class);
         stopService(serviceIntent);
-
     }
 
   /*  private void setupServer() {
@@ -441,5 +448,16 @@ public class ServerActivity extends AppCompatActivity {
        listAdapter.notifyDataSetChanged();
 
         }
+    }
+
+
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+    ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+             for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+             if (serviceClass.getName().equals(service.service.getClassName())) {
+                 return true;
+                 }
+             }
+             return false;
     }
 }
